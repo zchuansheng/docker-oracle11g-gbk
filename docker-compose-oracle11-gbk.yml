@@ -1,0 +1,29 @@
+﻿#git代码仓库服务
+#scp -r root@192.168.31.78:/srv/docker/oracle11g/data_min /srv/docker/oracle11g/data_min
+
+version: '3'
+services:
+  oracle:
+    image: oracle11g-gbk
+    #image: wnameless/oracle-xe-11g-r2:latest
+    container_name: "oracle11g-gbk"
+    restart: always #unless-stopped
+    privileged: true   
+    user: root
+    environment:
+      TZ: 'Asia/Shanghai' #设置时区
+    ports:
+      - "1522:1521"
+      - "8081:8080"
+    volumes:
+      - "${DOCKER_HOME}/oracle11g/sh/create_user.sql:/docker-entrypoint-initdb.d/create_user.sql"
+      - "${DOCKER_HOME}/oracle11g/sh/healthcheck.sh:/tmp/healthcheck.sh"
+      - "${DOCKER_HOME}/oracle11g/oradata/hmfmsfd :/u01/app/oracle/oradata/hmfmsfd"
+      - ${DOCKER_HOME}/oracle11g/dpdump:/u01/app/oracle/oradata/dpdump 
+      - ${DOCKER_HOME}/oracle11g/sh:/root/sh 
+      
+    healthcheck:
+      test: /bin/bash /tmp/healthcheck.sh
+      interval: 2s
+      timeout: 10s
+      retries: 1800 # 2s*1800 = 3600s = 60min
